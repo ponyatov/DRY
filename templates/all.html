@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{{ ctx.head(test=True) }}</title>
+    <link rel="shortcut icon" href="{{web['logo'].val}}">
+    <link rel="stylesheet" href="/css.css">
+{% block head %}
+{% endblock %}
+</head>
+
+<body>
+{% block body %}
+{% endblock %}
+{% block form %}
+<form id=cli method=post onkeypress="ctrlEnter(event, this);">
+{{form.hidden_tag()}}
+{{form.pad()}}
+{{form.go()}}
+</form>
+{% endblock %}
+</body>
+
+{% block script %}
+
+<script>
+    function ctrlEnter(event, form) {
+        if ((event.ctrlKey) && ((event.keyCode == 0x0A) || (event.keyCode == 0x0D)))
+            form.go.click();
+    }
+</script>
+
+{% endblock %}
+
+</html>

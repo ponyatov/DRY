@@ -1,0 +1,14 @@
+*~
+*.swp
+*.log
+
+bin/
+include/
+lib/
+lib64
+share/
+pyvenv.cfg
+__pycache__/
+
+/target/
+Cargo.lock

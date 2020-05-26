@@ -1,0 +1,7 @@
+* {
+    color: {{ web['fore'].val }};
+    background: {{ web['back'].val }};
+    font-family: {{ web['font'].val }};
+    font-size: {{ web['size'].val }};
+    border: 1pt solid yellow;
+}
