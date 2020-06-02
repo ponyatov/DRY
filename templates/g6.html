@@ -1,0 +1,66 @@
+{% extends 'all.html' %}
+
+{% block body %}
+<ul>
+<li> <a href=https://g6.antv.vision/en/docs/manual/tutorial/preface>https://g6.antv.vision/en/docs/manual/tutorial/preface</a>
+<li> <a href=https://g6.antv.vision/en/docs/manual/tutorial/example>https://g6.antv.vision/en/docs/manual/tutorial/example</a>
+<li> <a href=https://g6.antv.vision/en/docs/manual/tutorial/layout>https://g6.antv.vision/en/docs/manual/tutorial/layout</a>
+</ul>
+</a><p><hr>
+
+<div id="plot"></div>
+<pre>{{ ctx.dump() }}</pre>
+
+{% endblock %}
+
+{% block form %}
+{% endblock %}
+
+{% block script %}
+<script src='/g6.js'></script>
+
+<script>
+{% autoescape false %}
+{{ ctx.plot_g6() }}
+{% endautoescape %}
+</script>
+
+<script>
+window.onload = function () {
+    const graph = new G6.Graph({
+        //renderer: 'svg',
+        container: 'plot',
+        width: 640, height:480,
+        //fitView: true, //animate: true,
+        layout: {
+            type: 'force', nodeStrength:-50, collideStrength:50, alphaDecay:0.01,
+            preventOverlap: true,
+        },
+        modes: {
+            default: ['drag-canvas', 'zoom-canvas', 'drag-node'],
+        },
+        defaultNode: {
+            type: 'rect',
+            style: {stroke: 'grey', fill: 'darkblue', opacity: 0.5, radius:5,},
+            labelCfg: {
+                position: 'center',
+                //offset: [10, 10, 1, 1],
+                style:{ fill: 'yellow', font:'{{web["font"].val}}', }
+            },
+        },
+        defaultEdge: {
+            type: 'cubic',
+            style:{ opacity: 0.8, stroke:'green', endArrow: {path: 'M 0,0 L 0,2 L 4,0 L 0,-2 Z', d: -0}, },
+            labelCfg: {
+                //position: 'center',
+                //autoRotate: true,
+                style:{ fill: 'darkcyan', font:'{{web["font"].val}}', }
+            },
+        },
+    });
+    graph.data(data);
+    graph.render();
+}
+</script>
+
+{% endblock %}

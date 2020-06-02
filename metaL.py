@@ -1,3 +1,4 @@
+## metaL core /Python/
 
 import os, sys
 
@@ -49,6 +50,36 @@ class Object:
 
     def _type(self): return self.__class__.__name__.lower()
     def _val(self): return '%s' % self.val
+
+    ## plot
+
+    def plot_g6(self, depth=0, plt='', nodes='', edges='', parent=None, label=''):
+        # header
+        if not depth:
+            plt += 'const data = {\n'
+            Object.plotted = []
+        # cycles
+        if self in Object.plotted:
+            return (plt, nodes, edges)
+        else:
+            Object.plotted.append(self)
+        # itself
+        nodes += '\n\t\t{id:"%s",label:"%s"},' % (
+            self.id, self.head(test=True))
+        if parent:
+            edges += '\n\t\t{source:"%s",target:"%s",label:"%s"},' % (
+                parent.id, self.id, label)
+        # slot{}s
+        for i in self.slot:
+            plt, nodes, edges = self.slot[i].plot_g6(depth + 1, plt, nodes, edges, parent=self, label=i)
+        # footer
+        if not depth:
+            plt += '\tnodes: [%s\n\t],\n' % nodes
+            plt += '\tedges: [%s\n\t],\n' % edges
+            plt += '};\n'
+            return plt
+        else:
+            return (plt, nodes, edges)
 
     ## operator
 
@@ -447,17 +478,24 @@ parser = yacc.yacc(debug=False, write_tables=False)
 
 ## document
 
-class Doc(Object): pass
+class Doc(Object):
+    pass
 
-class Color(Doc): pass
+class Color(Doc):
+    pass
+
 
 vm >> Class(Color)
 
-class Font(Doc): pass
+class Font(Doc):
+    pass
+
 
 vm >> Class(Font)
 
-class Size(Doc,Primitive): pass
+class Size(Doc, Primitive):
+    pass
+
 
 vm >> Class(Size)
 
@@ -465,6 +503,8 @@ vm >> Class(Size)
 ## web
 
 class Web(Net):
+
+    extra_files = []
 
     def apply(self, that, ctx):
 
@@ -478,7 +518,10 @@ class Web(Net):
         def index(): return flask.render_template('index.html', ctx=self.ctx, web=self)
 
         @app.route('/css.css')
-        def csscss(): return flask.render_template('css.css', web=self)
+        def csscss():
+            return flask.Response(
+                flask.render_template('css.css', web=self),
+                mimetype='text/css')
 
         @app.route('/<path:path>.css')
         def css(path): return app.send_static_file(path + '.css')
@@ -486,16 +529,26 @@ class Web(Net):
         @app.route('/<path:path>.png')
         def png(path): return app.send_static_file(path + '.png')
 
-        @app.route('/<path:path>')
-        def path(path):
+        @app.route('/<path:path>.js')
+        def js(path): return app.send_static_file(path + '.js')
+
+        def split(path):
             ctx = self.ctx
             for i in path.split('/'):
                 if i:
                     ctx = ctx[i]
-            return flask.render_template('dump.html', ctx=ctx, web=self)
+            return ctx
+
+        @app.route('/g6/<path:path>')
+        def g6(path):
+            return flask.render_template('g6.html', ctx=split(path), web=self)
+
+        @app.route('/<path:path>')
+        def path(path):
+            return flask.render_template('dump.html', ctx=split(path), web=self)
 
         app.run(host=self['ip'].val, port=self['port'].val,
-                debug=True, extra_files=['metaL.ini'])
+                debug=True, extra_files=Web.extra_files)
 
 
 vm >> Class(Web)
@@ -504,6 +557,7 @@ vm >> Class(Web)
 
 if __name__ == '__main__':
     for srcfile in sys.argv[1:]:
+        Web.extra_files.append(srcfile)
         with open(srcfile) as src:
             lexer.file = srcfile
             parser.parse(src.read())

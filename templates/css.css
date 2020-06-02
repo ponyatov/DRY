@@ -3,5 +3,5 @@
     background: {{ web['back'].val }};
     font-family: {{ web['font'].val }};
     font-size: {{ web['size'].val }};
-    border: 1pt solid yellow;
+    border: 1px solid {{ web['border'].val }};
 }
