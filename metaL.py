@@ -120,6 +120,18 @@ class Object:
 
     def eval(self, ctx): return self
 
+    ## html
+
+    def html_head(self): return self.val
+
+    def html(self):
+        ht = self.html_head()
+        for i in self.slot:
+            ht += self.slot[i].html()+'<p>\n'
+        for j in self.nest:
+            ht += j.html()+'<p>\n'
+        return ht
+
 
 ## primitive
 
@@ -131,7 +143,7 @@ class Symbol(Primitive):
         return ctx[self.val]
 
 class String(Primitive):
-    pass
+    def html(self): return self.val
 
 class Number(Primitive):
     def __init__(self, V):
@@ -319,9 +331,12 @@ class Port(Net):
 vm >> Class(Port)
 
 class Email(Net):
-    pass
+    def html_head(self):
+        return '&lt;<a href="mailto:%s">%s</a>&gt;' % (self.val,self.val)
+
 class URL(Net):
-    pass
+    def html_head(self):
+        return '<a href="%s">%s</a>' % (self.val,self.val)
 
 
 ## lexer
@@ -350,6 +365,9 @@ def t_str_str(t):
     return t
 def t_str_any(t):
     r'.'
+    t.lexer.string += t.value
+def t_str_nl(t):
+    r'\n'
     t.lexer.string += t.value
 
 def t_nl(t):
@@ -603,15 +621,41 @@ class Web(Net):
         def g6(path):
             return flask.render_template('g6.html', ctx=split(path), web=self)
 
+        @app.route('/dump/<path:path>')
+        def dump(path):
+            return flask.render_template('dump.html', vm=vm, ctx=split(path), web=self)
+
         @app.route('/<path:path>')
         def path(path):
-            return flask.render_template('dump.html', ctx=split(path), web=self)
+            return flask.render_template('html.html', vm=vm, ctx=split(path), web=self)
 
         app.run(host=self['ip'].val, port=self['port'].val,
                 debug=True, extra_files=Web.extra_files)
 
 
 vm >> Class(Web)
+
+## rosatom
+
+class RA(Object):
+    def html_head(self): return '<h1>%s</h1>\n' % self.val
+
+vm >> Class(RA)
+
+class ГОСТ(RA):
+    def html_head(self): return '<p><b>ГОСТ %s</b>\n' % self.val
+
+vm >> Class(ГОСТ)
+
+class Название(RA):
+    def html_head(self): return '<i>%s</i>\n' % self.val
+
+vm >> Class(Название)
+
+class ОКС(RA):
+    def html_head(self): return '<b>ОКС:%s</b>\n' % self.val
+
+vm >> Class(ОКС)
 
 ## init
 

@@ -1,0 +1,10 @@
+{% extends 'index.html' %}
+
+{% block form %}
+{% endblock %}
+
+{% block body %}
+{% autoescape false %}
+<div id=html>{{ ctx.html() }}</div>
+{% endautoescape %}
+{% endblock %}
