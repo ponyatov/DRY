@@ -20,7 +20,7 @@
             "sequence": [
                 "workbench.action.files.saveAll",
                 // "workbench.action.terminal.focus",
-                {"command": "workbench.action.terminal.sendSequence","args": {"text": "\u000Dclear ; make rust \u000D"}}
+                {"command": "workbench.action.terminal.sendSequence","args": {"text": "\u000Dclear ; make nimdoc \u000D"}}
             ],
         },
     ],
@@ -29,13 +29,20 @@
     "files.watcherExclude": {
         "**/bin/**": true, "**/include/**":true, "**/lib*/**":true, "**/share/**":true,
         "**/*.pyc": true, "**/docs/**":true,
+        "**/__pycache__/**":true,
+        "**/.pytest_cache/**":true,
     //     "**/buildroot-*/**": true,
-    //     "**/firmware/**": true,
+        "**/static/**": true,
+        "**/target/**": true,
+        "**/assets/**": true,
     },
 
     "files.exclude": {
         "bin": true, "include":true, "lib*":true, "share":true, "pyvenv.cfg":true,
         "**/*.pyc": true, "**/docs/**":true,
+        "**/__pycache__/**":true,
+        "**/.pytest_cache/**":true,
+        "**/target/**": true,
     },
 
     "editor.tabSize": 4,

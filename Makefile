@@ -15,23 +15,32 @@ IP	 ?= 127.0.0.1
 PORT ?= 19999
 
 
-.PHONY: all py flask rust nim test
-all: nim
+.PHONY: all py flask rust test rete
+all: rete
 
 
-flask: $(PY) $(MODULE).py $(MODULE).ini flask.ini
+flask: $(PY) $(MODULE).py $(MODULE).ini web.ini
 	IP=$(IP) PORT=$(PORT) $^
 py: $(PY) $(MODULE).py $(MODULE).ini
 	IP=$(IP) PORT=$(PORT) $^
 test: $(PYT) test_$(MODULE).py $(MODULE).py
 	$(PYT) test_$(MODULE).py
+rete: $(PY) Rete.py
+	$^
 
+.PHONY: nim nimdoc
 
 nim: ./metaL metaL.ini
 	./$^
-./metaL: src/metaL.nim metaL.nimble
+./metaL: src/metaL.nim metaL.nimble nim.cfg Makefile
 	nimpretty $<
 	nimble build
+nimdoc: docs/$(MODULE).html
+docs/$(MODULE).html: $(CWD)/src/metaL.nim Makefile
+	nimpretty $<
+	cd docs ; nim doc $<
+#	--project --index:on 
+#	--git.devel:master --git.url:https://github.com/ponyatov/DRY 
 
 
 RS = src/main.rs
@@ -43,7 +52,7 @@ target/debug/metal: Cargo.toml $(RS) Makefile
 
 
 .PHONY: install
-install: debian $(PIP) js
+install: debian $(PIP) js doc
 	$(PIP) install    -r requirements.txt
 	$(MAKE) requirements.txt
 
@@ -99,10 +108,10 @@ static/g6.js:
 .PHONY: master shadow release zip
 
 MERGE  = Makefile README.md .gitignore .vscode apt.txt requirements.txt doc
-MERGE += $(MODULE).py $(MODULE).ini
-MERGE += flask.ini static templates
+MERGE += $(MODULE).py $(MODULE).ini Rete.py
+MERGE += web.ini static templates
 MERGE += src Cargo.toml
-MERGE += $(MODULE).nimble src/$(MODULE).nim
+MERGE += $(MODULE).nimble nim.cfg src/$(MODULE).nim
 
 master:
 	git checkout $@
@@ -121,6 +130,8 @@ zip:
 
 
 .PHONY: doc
-doc: doc/CMU-CS-95-113.pdf
+doc: doc/CMU-CS-95-113.pdf doc/rete-mass-pattern-match-paper.pdf
 doc/CMU-CS-95-113.pdf:
 	$(WGET) -O $@ http://reports-archive.adm.cs.cmu.edu/anon/1995/CMU-CS-95-113.pdf
+doc/rete-mass-pattern-match-paper.pdf:
+	$(WGET) -O $@ https://github.com/ponyatov/DRY/releases/download/020620-f74c/rete-mass-pattern-match-paper.pdf

@@ -1,34 +1,123 @@
 ## metaL core /Nim/
 
 import os
-
-## graph
-
-type Object = object
-    val: string
-    nest: seq[Object]
-
 import strutils
+import tables
+
+# graph
+
+type Object* = object
+    ## generic object graph node (frame)
+    ##
+    ## this *universal knowledge representation*
+    ## in a form of the attributed object graph
+    ## was inherited from Marvin Minsky's **Frame model**:
+    ## https://web.media.mit.edu/~minsky/papers/Frames/frames.html
+    val: string ## scalar value: object name / string / number
+    slot: Table[string, Object] ## slots = attributes = dictionary
+    nest: seq[Object] ## nested elements = vector = stack = queue
+
+# dump
 
 proc pad(self: Object, depth: int): string =
+    ## tree padding
     "\n" & repeat("\t", depth)
 
-proc head(self: Object, prefix: string): string =
-    prefix & "<object:" & self.val & ">"
+proc sid*(self: Object): string =
+    ## unical object `@id`
+    '@' & cast[int](self.unsafeAddr).toHex
 
-proc dump(self: Object, depth: int = 0, prefix: string = ""): string =
-    let head = self.pad(depth) & self.head(prefix)
-    return head
+proc sval(self: Object): string =
+    ## ASCII representation of `self.val` for dumps
+    $self.val
 
-proc `$`(self: Object): string = self.dump("X")
+proc stype(self: Object): string =
+    ## object type name
+    ($self.type).toLower
 
-let hello = Object(val: "Hello")
+proc head*(self: Object, prefix: string): string =
+    ## `<T:V>` header-only object dump
+    prefix & "<" & self.stype & ":" & self.sval & "> @" & self.sid
+
+proc dump*(self: Object, depth: int = 0, prefix: string = ""): string =
+    ## full tree-form ASCII dump of given subgraph
+    # header
+    var tree = self.pad(depth) & self.head(prefix)
+    # slot{}s
+    for k, v in self.slot:
+        tree &= v.dump(depth+1, prefix = $k&" = ")
+    # nest[]ed
+    var idx = 0;
+    for j in self.nest:
+        tree &= j.dump(depth+1, prefix = $idx & ": "); idx+=1
+    # subtree
+    return tree
+
+proc `$`*(self: Object): string =
+    ## ASCII subgraph representation
+    self.dump()
+
+# operator
+
+proc `[]=`*(self: var Object, key: string, that: Object): void =
+    ## `A[key]=B ^void` set slot value by given `key`
+    self.slot[key] = that
+
+proc `<<`*(self: var Object, that: Object): var Object =
+    ## `A << B -> A[B.type] = B ^A` | assign slot by `.type`
+    self.slot[that.stype] = that
+    self
+proc `>>`*(self: var Object, that: Object): var Object =
+    ## `A >> B -> A[B.val] = B ^A` | assign slot by `.val` ue
+    self.slot[that.val] = that
+    self
+
+proc `//`*(self: var Object, that: Object): var Object =
+    ## `A.push(B) ^A` | push as a stack
+    self.nest.add(that)
+    self
+
+var hello* = Object(val: "Hello")
 echo $hello
+let world* = Object(val: "World")
+discard hello // world
+echo $hello
+let left* = Object(val: "left")
+let right* = Object(val: "right")
+hello[$0] = Object(val: $1)
+let x = Object(val: "")
+echo (hello << left) >> right
 
-## init
+# p.62
+
+# init
 
 doAssert paramCount() > 0, "no source files"
 
 for i in commandLineParams():
     let srcfile = i
     echo srcfile
+
+# game
+
+# https://www.youtube.com/watch?v=EwM1Z3WdqjM
+# using NICO engine
+
+import nico
+
+proc gameInit() =
+    echo "init"
+
+proc gameUpdate(dt: float32) =
+    echo "update: " & $dt
+
+proc gameDraw() =
+    # echo "draw"
+    cls()
+    setColor(7)
+    print("Hello", 12, 34)
+
+
+nico.init("metaL", "game")
+nico.createWindow("game", 320, 240, 4)
+nico.run(gameInit, gameUpdate, gameDraw)

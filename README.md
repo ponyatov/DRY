@@ -8,3 +8,6 @@
 ~$ cd DRY
 ~/DRY$ make install
 ```
+
+* Knowledge based programming definition: http://perso.univ-mlv.fr/ocure/baader97logicbased.pdf?origin=publication_detail
+

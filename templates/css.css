@@ -1,7 +1,7 @@
 * {
-    color: {{ web['fore'].val }};
-    background: {{ web['back'].val }};
     font-family: {{ web['font'].val }};
     font-size: {{ web['size'].val }};
-    border: 1px solid {{ web['border'].val }};
 }
+
+#pad,#go { width:100%; }
+#dump { height:5%; overflow: auto; }

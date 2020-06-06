@@ -7,25 +7,45 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>{{ ctx.head(test=True) }}</title>
     <link rel="shortcut icon" href="/{{web['logo'].val}}">
+    <link rel="stylesheet" href="/bootstrap.css">
     <link rel="stylesheet" href="/css.css">
 {% block head %}
 {% endblock %}
 </head>
 
 <body>
-{% block body %}
-{% endblock %}
-{% block form %}
-<form id=cli method=post onkeypress="ctrlEnter(event, this);">
-{{form.hidden_tag()}}
-{{form.pad()}}
-{{form.go()}}
-</form>
-{% endblock %}
+<div class="container fullscreen">
+
+<div class="header navbar-fixed-top">
+    <a href="{{ctx['GITHUB'].val}}"><img alt="About" class="navbar-right" src="/logo.png"></a>
+<ul>
+<li><a href="/redmine">Redmine</a>
+</ul>
+</div>
+
+<div class="row mh-75">
+    {% block body %}
+    <div id=dump><pre>{{ctx.dump()}}</pre></div>
+    {% endblock %}
+</div>
+
+<div class="footer navbar-fixed-bottom">
+    {% block form %}
+        <form class="navbar-form" id=cli method=post onkeypress="ctrlEnter(event, this);">
+            {{form.hidden_tag()}}
+            <div class="col-sm-10">{{form.pad()}}</div>
+            <div class="col-sm-2 btn">{{form.go()}}</div>
+        </form>
+    {% endblock %}
+</div>
+
+</div>
 </body>
 
-{% block script %}
+<script src='/jquery.js'></script>
+<script src='/bootstrap.js'></script>
 
+{% block script %}
 <script>
     function ctrlEnter(event, form) {
         if ((event.ctrlKey) && ((event.keyCode == 0x0A) || (event.keyCode == 0x0D)))

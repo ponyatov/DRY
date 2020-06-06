@@ -71,7 +71,8 @@ class Object:
                 parent.id, self.id, label)
         # slot{}s
         for i in self.slot:
-            plt, nodes, edges = self.slot[i].plot_g6(depth + 1, plt, nodes, edges, parent=self, label=i)
+            plt, nodes, edges = self.slot[i].plot_g6(
+                depth + 1, plt, nodes, edges, parent=self, label=i)
         # footer
         if not depth:
             plt += '\tnodes: [%s\n\t],\n' % nodes
@@ -103,6 +104,16 @@ class Object:
 
     ## stack
 
+    def top(self): return self.nest[-1]
+    def tip(self): return self.nest[-2]
+    def pop(self): return self.nest.pop(-1)
+    def pip(self): return self.nest.pop(-2)
+
+    def dup(self): return self // self.top()
+    def drop(self): self.pop(); return self
+    def swap(self): return self // self.pip()
+    def over(self): return self // self.tip()
+    def press(self): self.pip(); return self
     def dropall(self): self.nest = []; return self
 
     ## evaluate
@@ -144,6 +155,18 @@ class Bin(Integer):
     def _val(self):
         return bin(self.val)
 
+# container
+
+class Container(Object):
+    pass
+
+class Vector(Container):
+    pass
+class Dict(Container):
+    pass
+class Stack(Container):
+    pass
+
 ## active
 
 class Active(Object):
@@ -155,6 +178,11 @@ class VM(Active):
 
 vm = VM('metaL')
 vm << vm
+env = Vector('env')
+vm >> env
+for i in os.environ:
+    env[i] = String(os.environ[i])
+
 
 class Command(Active):
     def __init__(self, F):
@@ -169,8 +197,27 @@ class Command(Active):
 
 def QQ(that, ctx): print(that, file=log); sys.exit(0)
 
+## debug
+
 
 vm['??'] = Command(QQ)
+
+## stack
+
+def dup(that, ctx): return that.dup()
+def drop(that, ctx): return that.drop()
+def swap(that, ctx): return that.swap()
+def over(that, ctx): return that.over()
+def press(that, ctx): return that.press()
+def dropall(that, ctx): return that.dropall()
+
+
+vm >> Command(dup)
+vm >> Command(drop)
+vm >> Command(swap)
+vm >> Command(over)
+vm >> Command(press)
+vm >> Command(dropall)
 
 ## meta
 
@@ -422,7 +469,7 @@ precedence = (
     ('right', 'eq'),
     # ('nonassoc', 'lvalue'),
     # ('nonassoc', 'rvalue'),
-    ('left', 'lshift', 'rshift'),
+    ('left', 'lshift', 'rshift', 'push'),
     ('left', 'dot'),
     ('left', 'apply'),
     ('nonassoc', 'colon'),
@@ -510,18 +557,31 @@ class Web(Net):
 
         self.ctx = that
 
-        import flask
+        import flask, flask_wtf, wtforms
 
         app = flask.Flask(self.val)
+        app.config['SECRET_KEY'] = os.urandom(32)
 
-        @app.route('/')
-        def index(): return flask.render_template('index.html', ctx=self.ctx, web=self)
+        class CLI(flask_wtf.FlaskForm):
+            pad = wtforms.TextAreaField('pad',
+                                        render_kw={'rows': 5,
+                                                   'autofocus': 'true'},
+                                        default='# metaL commands...')
+            go = wtforms.SubmitField('Ctrl + Enter',
+                                     render_kw={'style': 'btn btn-default'})
+
+        @app.route('/', methods=['GET', 'POST'])
+        def index():
+            form = CLI()
+            if form.validate_on_submit():
+                lexer.file = '%s' % form
+                parser.parse(form.pad.data + '\n')
+            return flask.render_template('index.html', ctx=self.ctx, web=self, form=form)
 
         @app.route('/css.css')
         def csscss():
             return flask.Response(
-                flask.render_template('css.css', web=self),
-                mimetype='text/css')
+                flask.render_template('css.css', web=self), mimetype='text/css')
 
         @app.route('/<path:path>.css')
         def css(path): return app.send_static_file(path + '.css')
@@ -555,9 +615,13 @@ vm >> Class(Web)
 
 ## init
 
-if __name__ == '__main__':
+def init():
     for srcfile in sys.argv[1:]:
         Web.extra_files.append(srcfile)
         with open(srcfile) as src:
             lexer.file = srcfile
             parser.parse(src.read())
+
+
+if __name__ == '__main__':
+    init()

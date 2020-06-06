@@ -1,0 +1,5 @@
+Object	metaL.html#Object	metaL: Object	
+head	metaL.html#head,Object,string	metaL: head(self: Object; prefix: string): string	
+dump	metaL.html#dump,Object,int,string	metaL: dump(self: Object; depth: int = 0; prefix: string = &quot;&quot;): string	
+`$`	metaL.html#$,Object	metaL: `$`(self: Object): string	
+`//`	metaL.html#//,Object,Object	metaL: `//`(self: Object; that: Object): Object	
