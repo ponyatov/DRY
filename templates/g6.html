@@ -2,13 +2,14 @@
 
 {% block body %}
 <ul>
-<li> <a href=https://g6.antv.vision/en/docs/manual/tutorial/preface>https://g6.antv.vision/en/docs/manual/tutorial/preface</a>
-<li> <a href=https://g6.antv.vision/en/docs/manual/tutorial/example>https://g6.antv.vision/en/docs/manual/tutorial/example</a>
-<li> <a href=https://g6.antv.vision/en/docs/manual/tutorial/layout>https://g6.antv.vision/en/docs/manual/tutorial/layout</a>
+<li> <a href="https://g6.antv.vision/en/docs/manual/tutorial/preface">https://g6.antv.vision/en/docs/manual/tutorial/preface</a>
+<li> <a href="https://g6.antv.vision/en/docs/manual/tutorial/example">https://g6.antv.vision/en/docs/manual/tutorial/example</a>
+<li> <a href="https://g6.antv.vision/en/docs/manual/tutorial/layout">https://g6.antv.vision/en/docs/manual/tutorial/layout</a>
 </ul>
 </a><p><hr>
 
 <div id="plot"></div>
+
 <pre>{{ ctx.dump() }}</pre>
 
 {% endblock %}
@@ -17,6 +18,7 @@
 {% endblock %}
 
 {% block script %}
+
 <script src='/g6.js'></script>
 
 <script>
@@ -32,10 +34,10 @@ window.onload = function () {
         container: 'plot',
         width: 640, height:480,
         //fitView: true, //animate: true,
-        layout: {
-            type: 'force', nodeStrength:-50, collideStrength:50, alphaDecay:0.01,
-            preventOverlap: true,
-        },
+//        layout: {
+//            type: 'force', nodeStrength:-50, collideStrength:50, alphaDecay:0.01,
+//            preventOverlap: true,
+//        },
         modes: {
             default: ['drag-canvas', 'zoom-canvas', 'drag-node'],
         },
@@ -50,11 +52,11 @@ window.onload = function () {
         },
         defaultEdge: {
             type: 'cubic',
-            style:{ opacity: 0.8, stroke:'green', endArrow: {path: 'M 0,0 L 0,2 L 4,0 L 0,-2 Z', d: -0}, },
+            style:{ opacity: 0.8, endArrow: {path: 'M 0,0 L 0,4 L 5,0 L 0,-4 Z', d: -0}, },
             labelCfg: {
                 //position: 'center',
                 //autoRotate: true,
-                style:{ fill: 'darkcyan', font:'{{web["font"].val}}', }
+                style:{ fill: 'darkcyan', font:'{{web["font"].val}}', fontSize:'15', }
             },
         },
     });

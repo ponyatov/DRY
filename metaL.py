@@ -53,7 +53,38 @@ class Object:
 
     ## plot
 
-    def plot_g6(self, depth=0, plt='', nodes='', edges='', parent=None, label=''):
+    def plot_go(self, depth=0, nodes='', edges='', parent=None, label='', color="green"):
+        # init
+        if not depth:
+            Object.plotted = []
+        # cycles
+        if self in Object.plotted:
+            return (nodes, edges)
+        else:
+            Object.plotted.append(self)
+        # itself
+        nodes += '\n\t\t\t{key:"%s",text:"%s"},' % (
+            self.id, self.head(test=True))
+        if parent:
+            edges += '\n\t\t\t{from:"%s",to:"%s",text:"%s",color:"%s"},' % (
+                parent.id, self.id, label, color)
+        # slot{}s
+        for i in self.slot:
+            nodes, edges = self.slot[i].plot_go(
+                depth + 1, nodes, edges, parent=self, label=i, color='blue')
+        # nest[]ed
+        idx = 0
+        for j in self.nest:
+            nodes, edges = j.plot_go(
+                depth + 1, nodes, edges, parent=self, label=idx, color='red')
+            idx += 1
+        # subgraph finish/recursion
+        if not depth:
+            return '\n\t\t[%s\n\t\t],\n\t\t[%s\n\t\t],' % (nodes, edges)
+        else:
+            return (nodes, edges)
+
+    def plot_g6(self, depth=0, plt='', nodes='', edges='', parent=None, label='', color="green"):
         # header
         if not depth:
             plt += 'const data = {\n'
@@ -67,12 +98,18 @@ class Object:
         nodes += '\n\t\t{id:"%s",label:"%s"},' % (
             self.id, self.head(test=True))
         if parent:
-            edges += '\n\t\t{source:"%s",target:"%s",label:"%s"},' % (
-                parent.id, self.id, label)
+            edges += '\n\t\t{source:"%s",target:"%s",label:"%s",color:"%s"},' % (
+                parent.id, self.id, label, color)
         # slot{}s
         for i in self.slot:
             plt, nodes, edges = self.slot[i].plot_g6(
-                depth + 1, plt, nodes, edges, parent=self, label=i)
+                depth + 1, plt, nodes, edges, parent=self, label=i, color='blue')
+        # nest[]ed
+        idx = 0
+        for j in self.nest:
+            plt, nodes, edges = j.plot_g6(
+                depth + 1, plt, nodes, edges, parent=self, label=idx, color='red')
+            idx += 1
         # footer
         if not depth:
             plt += '\tnodes: [%s\n\t],\n' % nodes
@@ -127,9 +164,9 @@ class Object:
     def html(self):
         ht = self.html_head()
         for i in self.slot:
-            ht += self.slot[i].html()+'<p>\n'
+            ht += self.slot[i].html() + '<p>\n'
         for j in self.nest:
-            ht += j.html()+'<p>\n'
+            ht += j.html() + '<p>\n'
         return ht
 
 
@@ -332,11 +369,11 @@ vm >> Class(Port)
 
 class Email(Net):
     def html_head(self):
-        return '&lt;<a href="mailto:%s">%s</a>&gt;' % (self.val,self.val)
+        return '&lt;<a href="mailto:%s">%s</a>&gt;' % (self.val, self.val)
 
 class URL(Net):
     def html_head(self):
-        return '<a href="%s">%s</a>' % (self.val,self.val)
+        return '<a href="%s">%s</a>' % (self.val, self.val)
 
 
 ## lexer
@@ -594,7 +631,7 @@ class Web(Net):
             if form.validate_on_submit():
                 lexer.file = '%s' % form
                 parser.parse(form.pad.data + '\n')
-            return flask.render_template('index.html', ctx=self.ctx, web=self, form=form)
+            return flask.render_template('index.html', vm=vm, ctx=self.ctx, web=self, form=form)
 
         @app.route('/css.css')
         def csscss():
@@ -617,9 +654,13 @@ class Web(Net):
                     ctx = ctx[i]
             return ctx
 
+        @app.route('/go/<path:path>')
+        def go(path):
+            return flask.render_template('go.html', vm=vm, ctx=split(path), web=self)
+
         @app.route('/g6/<path:path>')
         def g6(path):
-            return flask.render_template('g6.html', ctx=split(path), web=self)
+            return flask.render_template('g6.html', vm=vm, ctx=split(path), web=self)
 
         @app.route('/dump/<path:path>')
         def dump(path):
@@ -640,20 +681,24 @@ vm >> Class(Web)
 class RA(Object):
     def html_head(self): return '<h1>%s</h1>\n' % self.val
 
+
 vm >> Class(RA)
 
 class ГОСТ(RA):
     def html_head(self): return '<p><b>ГОСТ %s</b>\n' % self.val
+
 
 vm >> Class(ГОСТ)
 
 class Название(RA):
     def html_head(self): return '<i>%s</i>\n' % self.val
 
+
 vm >> Class(Название)
 
 class ОКС(RA):
     def html_head(self): return '<b>ОКС:%s</b>\n' % self.val
+
 
 vm >> Class(ОКС)
 

@@ -1,0 +1,64 @@
+{% extends 'all.html' %}
+
+{% block body %}
+<ul>
+<li> <a href="https://gojs.net/latest/intro/index.html">https://gojs.net/latest/intro/index.html</a>
+</ul>
+</a><p><hr>
+
+<div id="plot" class="col-12"></div>
+
+<pre>{{ ctx.dump() }}</pre>
+
+{% endblock %}
+
+{% block form %}
+{% endblock %}
+
+{% block script %}
+
+<script src='/go.js'></script>
+
+<script>
+window.onload = function () {
+
+    var dia = new go.Diagram("plot");
+    var $ = go.GraphObject.make;
+
+    dia.nodeTemplate =
+        $(go.Node, go.Panel.Auto,
+            $(go.Shape, {
+                figure: "RoundedRectangle",
+                fill:   "darkblue",
+                }
+            ),
+            $(go.TextBlock, {
+                margin: 3,
+                stroke: "yellow",
+                },
+                new go.Binding("text", "text")
+            )
+        );
+
+    dia.edgeTemplate =
+        $(go.Link,
+            $(go.Shape, {
+                },
+                new go.Binding("stroke","color")
+            ),
+            $(go.TextBlock, {
+                },
+                new go.Binding("text","text")
+            )
+
+        );
+
+    dia.model = new go.GraphLinksModel(
+        {% autoescape false %}
+            {{ ctx.plot_go() }}
+        {% endautoescape %}
+    )
+}
+</script>
+
+{% endblock %}

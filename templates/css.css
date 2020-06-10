@@ -4,4 +4,5 @@
 }
 
 #pad,#go { width:100%; }
-#dump { height:5%; overflow: auto; }
+#dump { height:50%; overflow: auto; }
+#plot { height:500px; border: 1px solid grey; }
