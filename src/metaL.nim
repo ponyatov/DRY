@@ -98,26 +98,25 @@ for i in commandLineParams():
     let srcfile = i
     echo srcfile
 
-# game
+# http://yieldprolog.sourceforge.net/tutorial1.html
 
-# https://www.youtube.com/watch?v=EwM1Z3WdqjM
-# using NICO engine
+type v = object
+    bound: bool
+    value: string
 
-import nico
+iterator `<<`(vv: var v, val: string): v =
+    if not vv.bound:
+        vv.value = val
+        vv.bound = true
+        yield vv
+        vv.bound = false
+    elif vv.value == val:
+        yield vv
 
-proc gameInit() =
-    echo "init"
+iterator person(vv: var v): v =
+    for _ in vv << "Chelsea": yield vv
+    for _ in vv << "Hillary": yield vv
+    for _ in vv << "Bill": yield vv
 
-proc gameUpdate(dt: float32) =
-    echo "update: " & $dt
-
-proc gameDraw() =
-    # echo "draw"
-    cls()
-    setColor(7)
-    print("Hello", 12, 34)
-
-
-nico.init("metaL", "game")
-nico.createWindow("game", 320, 240, 4)
-nico.run(gameInit, gameUpdate, gameDraw)
+var vv = v()
+for p in person(vv): echo vv.value
